@@ -115,3 +115,7 @@ C++ implementations of algorithms
 + Max cut prolbme on planar graph by F. Hadlock (1975)
 + The Random Walk Construction of Uniform Spanning Trees and Uniform Labelled Trees
 
+  
+# License
+These codes are licensed under CC0.
+[![CC0](http://i.creativecommons.org/p/zero/1.0/88x31.png "CC0")](http://creativecommons.org/publicdomain/zero/1.0/deed.ja)
