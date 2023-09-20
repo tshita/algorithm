@@ -9,7 +9,7 @@
 
 using Real = double;
 
-constexpr Real EPS = 1e-8;
+constexpr Real EPS = 1e-10;
 const Real PI = acos(static_cast<Real>(-1.0)); // GCC 4.6.1 以上で acos() は constexpr の場合がある
 
 inline int sign(Real a) { return (a < -EPS) ? -1 : (a > EPS) ? +1 : 0; }
@@ -56,16 +56,23 @@ struct Point2 {
     bool operator>(const Point2 &rhs) const { return gt(x, rhs.x) || (eq(x, rhs.x) && gt(y, rhs.y)); }
 
     // Other operator
-    Real abs(void) const { return std::hypot(x, y); } // ユークリッド距離を返す
+    // ユークリッド距離を返す
+    Real abs(void) const { return std::hypot(x, y); }
+
     // ユークリッド距離の二乗を返す
     Real abs2(void) const { return x * x + y * y; }
+
     // 単位はラジアンで範囲 [-PI, PI] で x 軸の正の方向となす角度を返す
     // atan2(y, x) は y / x の逆正接を返す（arctan(y / x)）
     // atan(z) と異なりどの象限に属しているか分かるので正しい符号を返す
     Real arg(void) const { return atan2(y, x); }
+
+    // 内積
     Real dot(const Point2 &rhs) const { return x * rhs.x + y * rhs.y; }
+
     // 原点を中心に反時計回りに90度回転する
     Point2 rotate90(void) { return *this = Point2(-y, x); }
+
     // 原点を中心に反時計回りに angle [rad] だけ回転する
     void rotate(Real angle) {
             *this = Point2(cos(angle) * x - sin(angle) * y, sin(angle) * x + cos(angle) * y);
@@ -106,6 +113,7 @@ enum class CCW : int {
     OTHER             = -3,
 };
 
+// dir と逆の向きを返す
 CCW inv(const CCW dir) {
     switch (dir) {
         case (CCW::COUNTER_CLOCKWISE): return CCW::CLOCKWISE;
@@ -116,6 +124,7 @@ CCW inv(const CCW dir) {
     }
 }
 
+// Counter-Clockwise predicaste (a, b, c)
 CCW ccw(const Point2 &a, Point2 b, Point2 c) {
     b -= a;  c -= a;
     if (sign(abs_cross(b, c)) == 1) return CCW::COUNTER_CLOCKWISE;
@@ -125,6 +134,7 @@ CCW ccw(const Point2 &a, Point2 b, Point2 c) {
     return CCW::ON_SEGMENT;
 }
 
+// ccw 関数の戻り値を CCW の規定型（int 型）で返す
 auto ccw_t(const Point2 &a, Point2 b, Point2 c) {
     return static_cast<std::underlying_type<CCW>::type>(ccw(a, std::move(b), std::move(c)));
 }
@@ -171,7 +181,7 @@ public:
     Circle(const Point2 &p, Real r = 0.0) : Point2(p), r(r) {}
 
     // Is p contained or on segment or otherwise? : O(n)
-    CONTAIN contain_core(const Point2 &p) const;
+    CONTAIN contain(const Point2 &p) const;
 };
 
 // Input of a circle
@@ -326,7 +336,6 @@ std::vector<Point2> cross_point2(const Circle &c1, const Circle &c2) {
     return {base + dir, base - dir};
 }
 
-
 // the tangent line from a Point2 to a circle
 std::vector<Point2> tangent_point2(const Circle &c, const Point2 &p) {
     Real x = (p - c).abs2();
@@ -388,7 +397,7 @@ std::vector<Line> common_tangent(const Circle &c1, const Circle &c2) {
     return list;
 }
 
-CONTAIN Circle::contain_core(const Point2 &p) const {
+CONTAIN Circle::contain(const Point2 &p) const {
     const Real d = distance(p, p);
     return eq(this->r, d) ? CONTAIN::ON : (lt(this->r, d) ? CONTAIN::OUT : CONTAIN::IN);
 }
