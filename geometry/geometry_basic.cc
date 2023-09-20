@@ -397,12 +397,13 @@ CONTAIN Circle::contain_core(const Point2 &p) const {
 /**
  * Polygon: The order of the points in the polygon is counter-clockwise.
  */
-class Polygon : public std::vector<Point2> {
+class Polygon {
 public:
     explicit Polygon() {}
-    explicit Polygon(int size) : std::vector<Point2>(size){}
-    explicit Polygon(std::initializer_list<Point2> p) : std::vector<Point2>(p.begin(), p.end()) {}
-    explicit Polygon(std::vector<Point2> p) : std::vector<Point2>(p) {}
+    explicit Polygon(int size) : points(size){}
+    explicit Polygon(std::initializer_list<Point2> p) : points(p.begin(), p.end()) {}
+    // explicit Polygon(std::vector<Point2> p) : points(std::move(p)) {}
+    explicit Polygon(std::vector<Point2> &&p) : points(p) {}
 
     Real area() const; // area of polygon : O(n)
     bool is_convex() const; // Test whether it's convex polygon : O(n)
@@ -412,21 +413,23 @@ public:
     CONTAIN contain(const Point2 &p) const;
     // convex version : O(log n)
     CONTAIN convex_contain(const Point2 &p) const;
+
+    std::vector<Point2> points;
 };
 
 // Output of a polygon
 std::ostream& operator<<(std::ostream &os, const Polygon &poly) {
-    for (auto p : poly) os << p << ", ";
+    for (auto p : poly.points) os << p << ", ";
     return os;
 }
 
 Real Polygon::area() const {
-    const int n = this->size();
+    const int n = points.size();
     assert(1 < n);
 
-    Real area = abs_cross((*this)[n - 1], (*this)[0]);
+    Real area = abs_cross(points[n - 1], points[0]);
     for (int i = 0; i < n - 1; ++i)
-        area += abs_cross((*this)[i], (*this)[i + 1]);
+        area += abs_cross(points[i], points[i + 1]);
     return 0.5 * area;
 }
 
@@ -434,10 +437,10 @@ bool Polygon::is_convex() const {
     // if given polygon is not simple polygon we should check for all (i-1, i, i+1)
     // (p[i].y <= p[i-1].y && p[i].y < p[i+1].y)
     // doesn't happen  without first index which y is the lowest
-    const int n = this->size();
+    const int n = points.size();
     CCW diff = CCW::OTHER;
     for (int i = 0; i < n; ++i) {
-        CCW cur = ccw((*this)[i], (*this)[(i + 1) % n], (*this)[(i + 2) % n]);
+        CCW cur = ccw(points[i], points[(i + 1) % n], points[(i + 2) % n]);
         if (diff == CCW::OTHER && (cur == CCW::CLOCKWISE || cur == CCW::COUNTER_CLOCKWISE))
             diff = inv(cur);
         else if (cur == diff) return false;
@@ -446,12 +449,12 @@ bool Polygon::is_convex() const {
 }
 
 CONTAIN Polygon::contain(const Point2 &p) const {
-    const int n = this->size();
+    const int n = points.size();
     bool count = false;
     for (int i = 0; i < n; ++i) {
-        if (is_intersect(Segment((*this)[i], (*this)[(i + 1) % n]), p))
+        if (is_intersect(Segment(points[i], points[(i + 1) % n]), p))
             return CONTAIN::ON;
-        Point2 up = (*this)[i] - p, down = (*this)[(i + 1) % n] - p;
+        Point2 up = points[i] - p, down = points[(i + 1) % n] - p;
         if (up.y < down.y)
             std::swap(up, down);
         if (sign(down.y) <= 0 && sign(up.y) == 1 && sign(abs_cross(up, down)) == 1)
@@ -461,22 +464,22 @@ CONTAIN Polygon::contain(const Point2 &p) const {
 }
 
 CONTAIN Polygon::convex_contain(const Point2 &p) const {
-    const int n = this->size();
-    Point2 g = ((*this)[0] + (*this)[n / 3] + (*this)[2 * n / 3]) / 3.0; // inner Point2
+    const int n = points.size();
+    Point2 g = (points[0] + points[n / 3] + points[2 * n / 3]) / 3.0; // inner Point2
     int a = 0, b = n;
 
     while (a + 1 < b) { // invariant : c is in fan g-poly[a]-poly[b]
         int c = (a + b) * 0.5;
-        if (sign(abs_cross((*this)[a] - g, (*this)[c] - g)) == 1) { // angle < 180 deg
-            if (sign(abs_cross((*this)[a] - g, p - g)) >= 0 &&
-                sign(abs_cross((*this)[c] - g, p - g)) == -1)
+        if (sign(abs_cross(points[a] - g, points[c] - g)) == 1) { // angle < 180 deg
+            if (sign(abs_cross(points[a] - g, p - g)) >= 0 &&
+                sign(abs_cross(points[c] - g, p - g)) == -1)
                 b = c;
             else
                 a = c;
         }
         else {
-            if (sign(abs_cross((*this)[a] - g, p - g)) == -1 &&
-                sign(abs_cross((*this)[c] - g, p - g)) == 1)
+            if (sign(abs_cross(points[a] - g, p - g)) == -1 &&
+                sign(abs_cross(points[c] - g, p - g)) == 1)
                 a = c;
             else
                 b = c;
@@ -485,7 +488,7 @@ CONTAIN Polygon::convex_contain(const Point2 &p) const {
 
     // Assume that Point2s in polygon are in the order of counter-clockwise
     b %= n;
-    int res = sign(abs_cross((*this)[a] - p, (*this)[b] - p));
+    int res = sign(abs_cross(points[a] - p, points[b] - p));
     return (res == -1 ? CONTAIN::OUT : (res == 1 ? CONTAIN::IN : CONTAIN::ON));
 }
 
@@ -520,11 +523,11 @@ void shrink_to_point2s(std::vector<Point2> &ps, int m = 4) {
 // Andrew's Monotone Chain Algorithm : O(n * log n)
 Polygon convex_hull(std::vector<Point2> ps) {
     if (4 < ps.size()) shrink_to_point2s(ps);
-    if (ps.size() < 3) return Polygon(ps);
+    if (ps.size() < 3) return Polygon(std::move(ps));
 
     const int n = ps.size();
     int size = 0;
-    Polygon chain(2 * n);
+    std::vector<Point2> chain(2 * n);
 
     std::sort(ps.begin(), ps.end());
 
@@ -536,7 +539,7 @@ Polygon convex_hull(std::vector<Point2> ps) {
             --size;
     chain.resize(size - 1);
 
-    return chain;
+    return Polygon(std::move(chain));
 }
 
 // rotating calipers algorithm : O(n)
@@ -571,16 +574,15 @@ Real convex_diameter(const std::vector<Point2> &poly) {
 }
 
 Polygon Polygon::convex_cut(const Line &l) const {
-    const int n = this->size();
-    const Polygon &p = *this;
+    const int n = points.size();
     Polygon q; // left side polygon cutted by line
 
     for (int i = 0; i < n; ++i) {
-        Point2 cur(p[i]), next(p[(i + 1) % n]);
+        Point2 cur(points[i]), next(points[(i + 1) % n]);
         if (ccw(l, cur) != CCW::CLOCKWISE)
-            q.emplace_back(cur);
+            q.points.emplace_back(cur);
         if (ccw_t(l, cur) * ccw_t(l, next) == -1)
-            q.emplace_back(cross_point2(l, Line(cur, next)));
+            q.points.emplace_back(cross_point2(l, Line(cur, next)));
     }
 
     return q;
@@ -591,9 +593,9 @@ Polygon Polygon::convex_cut(const Line &l) const {
 Real intersection_area(const Circle &c, const Polygon &poly) {
     Real area = 0.0;
 
-    const int n = poly.size();
+    const int n = poly.points.size();
     for (int i = 0; i < n; ++i) {
-        const Point2 &p1 = poly[i] - c, &p2 = poly[(i + 1) % n] - c;
+        const Point2 &p1 = poly.points[i] - c, &p2 = poly.points[(i + 1) % n] - c;
 
         // p1 と p2 が同一直線上にある場合は面積は 0 なのでスキップ
         if (abs(ccw_t(c, p1, p2)) != 1) continue;
@@ -634,6 +636,9 @@ int main() {
     std::cout << p * 2 << std::endl;
     std::cout << 2 * p << std::endl;
     std::cout << p + q << std::endl;
+
+    Polygon poly({Point2(0.0, 0.0), Point2(10.0, 0.0), Point2(10.0, 10.0), Point2(0.0, 10.0)});
+    std::cout << poly.area() << std::endl;
 
     return 0;
 }
