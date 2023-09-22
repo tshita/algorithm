@@ -184,7 +184,6 @@ public:
         return *this; 
     }
 
-
     // Is p contained or on segment or otherwise? : O(n)
     CONTAIN contain(const Point2 &p) const;
 };
@@ -239,7 +238,7 @@ inline bool is_intersect(const Segment &s1, const Segment &s2) {
 }
 
 inline bool is_intersect(const Circle &c, const Point2 &p) { // p is in interior or boundary
-    return (c - p).abs() <= c.r + EPS;
+    return leq((c - p).abs(), c.r);
 }
 
 inline bool is_intersect(const Circle &c, const Segment &s) {
@@ -613,15 +612,15 @@ Real intersection_area(const Circle &c, const Polygon &poly) {
         // p1 と p2 が同一直線上にある場合は面積は 0 なのでスキップ
         if (abs(ccw_t(c, p1, p2)) != 1) continue;
 
-        if ((p1.abs() < c.r - EPS) && (p2.abs() < c.r - EPS)) {
+        if (lt(p1.abs(), c.r) && lt(p2.abs(), c.r)) {
             area += 0.5 * abs_cross(p1, p2);
         }
-        else if (p1.abs() < c.r - EPS) {
+        else if (lt(p1.abs(), c.r)) {
             const std::vector<Point2> ps = cross_point(c, Segment(p1, p2));
             area += 0.5 * abs_cross(p1, ps.front());
             area += 0.5 * c.r * c.r * arg(ps.front(), p2);
         }
-        else if (p2.abs() < c.r - EPS) {
+        else if (lt(p2.abs(), c.r)) {
             const std::vector<Point2> ps = cross_point(c, Segment(p1, p2));
             area += 0.5 * c.r * c.r * arg(p1, ps.front());
             area += 0.5 * abs_cross(ps.front(), p2);
