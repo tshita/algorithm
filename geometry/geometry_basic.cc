@@ -179,15 +179,19 @@ public:
     Real r;
     explicit Circle() {}
     Circle(const Point2 &p, Real r = 0.0) : Point2(p), r(r) {}
+    Circle& operator=(const Point2 &p) {
+        this->x = p.x; this->y = p.y;
+        return *this; 
+    }
+
 
     // Is p contained or on segment or otherwise? : O(n)
     CONTAIN contain(const Point2 &p) const;
 };
 
 // Input of a circle
-std::istream& operator>>(std::istream &is, Circle &c) {
-    return is >> c.x >> c.y >> c.r;
-}
+std::istream& operator>>(std::istream &is, Circle &c) { return is >> c.x >> c.y >> c.r; }
+std::ostream& operator<<(std::ostream &os, const Circle &c) { return os << c.x << ' ' << c.y << ' ' << c.r; }
 
 
 
@@ -286,7 +290,7 @@ inline Real distance(const Segment &s1, const Segment &s2) {
                 distance(s2, s1[0]), distance(s2, s1[1])});
 }
 
-Point2 cross_point2(const Line &l1, const Line &l2) {
+Point2 cross_point(const Line &l1, const Line &l2) {
     Real A = abs_cross(l1[1] - l1[0], l2[1] - l2[0]);
     Real B = abs_cross(l1[1] - l1[0], l1[1] - l2[0]);
     if (sign(std::abs(A)) == -1 && sign(std::abs(B)) == -1) return l2[0];
@@ -294,7 +298,7 @@ Point2 cross_point2(const Line &l1, const Line &l2) {
     return l2[0] + (l2[1] - l2[0]) * B / A;
 }
 
-std::vector<Point2> cross_point2(const Circle &c, const Line &l) {
+std::vector<Point2> cross_point(const Circle &c, const Line &l) {
     if (!is_intersect(c, l)) return std::vector<Point2>();
     Point2 mid = projection(l, c);
     if (eq((c - mid).abs(), c.r)) return {mid};
@@ -305,7 +309,7 @@ std::vector<Point2> cross_point2(const Circle &c, const Line &l) {
 }
 
 // 円 c と線分 s の交点を求める（s の端点も含む可能性がある）
-std::vector<Point2> cross_point2(const Circle &c, const Segment &s) {
+std::vector<Point2> cross_point(const Circle &c, const Segment &s) {
     if (!is_intersect(c, s)) return std::vector<Point2>();
 
     const Point2 mid = projection(s, c), e = (s[1] - s[0]) / (s[1] - s[0]).abs();
@@ -323,7 +327,7 @@ std::vector<Point2> cross_point2(const Circle &c, const Segment &s) {
     return ps;
 }
 
-std::vector<Point2> cross_point2(const Circle &c1, const Circle &c2) {
+std::vector<Point2> cross_point(const Circle &c1, const Circle &c2) {
     if (!is_intersect(c1, c2))
         return std::vector<Point2>();
     Real d = distance(c1, c2);
@@ -337,7 +341,7 @@ std::vector<Point2> cross_point2(const Circle &c1, const Circle &c2) {
 }
 
 // the tangent line from a Point2 to a circle
-std::vector<Point2> tangent_point2(const Circle &c, const Point2 &p) {
+std::vector<Point2> tangent_point(const Circle &c, const Point2 &p) {
     Real x = (p - c).abs2();
     Real d = x - c.r * c.r;
     if (sign(d) == -1) // no Point2
@@ -353,7 +357,7 @@ std::vector<Point2> tangent_point2(const Circle &c, const Point2 &p) {
 std::vector<Line> common_tangent(const Circle &c1, const Circle &c2) {
     // two circle contact one Point2 internally
     if (eq(distance(c1, c2), std::abs(c1.r - c2.r))) { // |  $ $|
-        Point2 cross_Point2 = cross_point2(c1, c2)[0];
+        Point2 cross_Point2 = cross_point(c1, c2)[0];
         Point2 up = (cross_Point2 - c1).rotate90();
         return {Line(cross_Point2 + up, cross_Point2 - up)};
     }
@@ -370,8 +374,8 @@ std::vector<Line> common_tangent(const Circle &c1, const Circle &c2) {
     else {
         Point2 p = (c1 * (-c2.r)) + (c2 * c1.r);
         p = p * (1 / (c1.r - c2.r));
-        std::vector<Point2> ps = tangent_point2(c1, p);
-        std::vector<Point2> qs = tangent_point2(c2, p);
+        std::vector<Point2> ps = tangent_point(c1, p);
+        std::vector<Point2> qs = tangent_point(c2, p);
         const int N = std::min(ps.size(), qs.size());
         for (int i = 0; i < N; ++i)
             list.emplace_back(Line(ps[i], qs[i]));
@@ -380,15 +384,15 @@ std::vector<Line> common_tangent(const Circle &c1, const Circle &c2) {
     // caluculate inner tangent
     if (eq(distance(c1, c2), c1.r + c2.r)) {
         // two circle contact one Point2 outernally | |$ $
-        Point2 cross_Point2 = cross_point2(c1, c2)[0];
+        Point2 cross_Point2 = cross_point(c1, c2)[0];
         Point2 up = (cross_Point2 - c1).rotate90();
         list.emplace_back(Line(cross_Point2 + up, cross_Point2 - up));
     }
     else { // | |  $ $
         Point2 p = (c1 * c2.r) + (c2 * c1.r);
         p = p * (1 / (c1.r + c2.r));
-        std::vector<Point2> ps = tangent_point2(c1, p);
-        std::vector<Point2> qs = tangent_point2(c2, p);
+        std::vector<Point2> ps = tangent_point(c1, p);
+        std::vector<Point2> qs = tangent_point(c2, p);
         const int N = std::min(ps.size(), qs.size());
         for (int i = 0; i < N; ++i)
             list.emplace_back(Line(ps[i], qs[i]));
@@ -504,7 +508,7 @@ CONTAIN Polygon::convex_contain(const Point2 &p) const {
 // クイックハル法： 凸法上の頂点とはならない頂点を除外する前処理を O(n m) 時間で行う
 // （360度を m 等分した角度を傾きに持つ m 本の直線と接する点からなる多角形に含まれない点を前もって除外する）
 // Andrew's Algorithm では凸法上の頂点数が少なくてもソートの計算時間が寄与するので O(n log n) となる
-void shrink_to_point2s(std::vector<Point2> &ps, int m = 4) {
+void shrink_to_points(std::vector<Point2> &ps, int m = 4) {
     std::vector<Point2> sep(m, ps.front());
 
     Point2 dir(0, -1);
@@ -531,7 +535,7 @@ void shrink_to_point2s(std::vector<Point2> &ps, int m = 4) {
 
 // Andrew's Monotone Chain Algorithm : O(n * log n)
 Polygon convex_hull(std::vector<Point2> ps) {
-    if (4 < ps.size()) shrink_to_point2s(ps);
+    if (4 < ps.size()) shrink_to_points(ps);
     if (ps.size() < 3) return Polygon(std::move(ps));
 
     const int n = ps.size();
@@ -591,7 +595,7 @@ Polygon Polygon::convex_cut(const Line &l) const {
         if (ccw(l, cur) != CCW::CLOCKWISE)
             q.points.emplace_back(cur);
         if (ccw_t(l, cur) * ccw_t(l, next) == -1)
-            q.points.emplace_back(cross_point2(l, Line(cur, next)));
+            q.points.emplace_back(cross_point(l, Line(cur, next)));
     }
 
     return q;
@@ -613,17 +617,17 @@ Real intersection_area(const Circle &c, const Polygon &poly) {
             area += 0.5 * abs_cross(p1, p2);
         }
         else if (p1.abs() < c.r - EPS) {
-            const std::vector<Point2> ps = cross_point2(c, Segment(p1, p2));
+            const std::vector<Point2> ps = cross_point(c, Segment(p1, p2));
             area += 0.5 * abs_cross(p1, ps.front());
             area += 0.5 * c.r * c.r * arg(ps.front(), p2);
         }
         else if (p2.abs() < c.r - EPS) {
-            const std::vector<Point2> ps = cross_point2(c, Segment(p1, p2));
+            const std::vector<Point2> ps = cross_point(c, Segment(p1, p2));
             area += 0.5 * c.r * c.r * arg(p1, ps.front());
             area += 0.5 * abs_cross(ps.front(), p2);
         }
         else {
-            const std::vector<Point2> ps = cross_point2(c, Segment(p1, p2));
+            const std::vector<Point2> ps = cross_point(c, Segment(p1, p2));
             if (ps.size() == 0) area += 0.5 * c.r * c.r * arg(p1, p2);
             else {
                 area += 0.5 * c.r * c.r * arg(p1, ps.front());
