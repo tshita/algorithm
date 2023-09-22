@@ -312,8 +312,9 @@ std::vector<Point2> cross_point(const Circle &c, const Segment &s) {
     if (!is_intersect(c, s)) return std::vector<Point2>();
 
     const Point2 mid = projection(s, c), e = (s[1] - s[0]) / (s[1] - s[0]).abs();
-    const Real len = sqrt(c.r * c.r - (mid - c).abs2());
+    if (eq(c.r, (mid - c).abs())) return { mid };
 
+    const Real len = sqrt(c.r * c.r - (mid - c).abs2());
     const Point2 p1 = mid + e * len, p2 = mid - e * len;
     const CCW ccw1 = ccw(s[0], p1, s[1]); 
 
