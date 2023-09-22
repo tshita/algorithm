@@ -314,10 +314,13 @@ std::vector<Point2> cross_point(const Circle &c, const Segment &s) {
     const Point2 mid = projection(s, c), e = (s[1] - s[0]) / (s[1] - s[0]).abs();
     const Real len = sqrt(c.r * c.r - (mid - c).abs2());
 
-    std::vector<Point2> ps;
     const Point2 p1 = mid + e * len, p2 = mid - e * len;
+    const CCW ccw1 = ccw(s[0], p1, s[1]); 
 
-    const CCW ccw1 = ccw(s[0], p1, s[1]), ccw2 = ccw(s[0], p2, s[1]);
+    if (p1 == p2 && ccw1 == CCW::ONLINE_FRONT) return {p1};
+
+    const CCW ccw2 = ccw(s[0], p2, s[1]);
+    std::vector<Point2> ps;
     if (ccw1 == CCW::ONLINE_FRONT || p1 == s[1]) ps.emplace_back(p1);
     if (ccw2 == CCW::ONLINE_FRONT || p2 == s[1]) ps.emplace_back(p2);
 
