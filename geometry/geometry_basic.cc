@@ -21,7 +21,7 @@ inline bool gt(Real a, Real b)  { return sign(a - b) == 1; }  // a > b
 inline bool geq(Real a, Real b) { return sign(a - b) >= 0; }  // a >= b
 
 // change between degree and radian
-inline Real to_radian(const Real degree) { return degree * PI / 180.0; }
+inline Real to_radian(const Real degree) { return degree * (PI / 180.0); }
 inline Real to_degree(const Real radian) { return radian * 180.0 / PI; }
 
 /**
