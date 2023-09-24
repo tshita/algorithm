@@ -89,7 +89,7 @@ std::istream& operator>>(std::istream &is, Point2 &p) { return is >> p.x >> p.y;
 inline Real dot(const Point2 &p1, const Point2 &p2) { return p1.x * p2.x + p1.y * p2.y; }
 
 // ベクトル p1 と p2 の外積の絶対値 |p1 x p2| ： |p1 x p2| = |p1| |p2| sin(theta)
-// 原点, p1, p2 を頂点とする符号付き三角形の面積（ p1 から p2 へ反時計回りで符号が正）
+// 原点, p1, p2 を頂点とする符号付き平行四辺形の面積（ p1 から p2 へ反時計回りで符号が正）
 inline Real abs_cross(const Point2 &p1, const Point2 &p2) { return p1.x * p2.y - p1.y * p2.x; }
 
 // ベクトル p1 から p2 への角度を返す（単位はラジアン）
@@ -184,8 +184,13 @@ public:
         return *this; 
     }
 
+    Real area() const { return PI * r * r; }
+    Real area_circular_sector(const Point2 &p1, const Point2 &p2, const bool strict_check = false) const; // 扇形の面積
+    Real area_circular_segment(const Point2 &p1, const Point2 &p2, const bool strict_check = false) const; // 弓形の面積
+
     // Is p contained or on segment or otherwise? : O(n)
     CONTAIN contain(const Point2 &p) const;
+    bool contain(const Circle &rhs) const;
 };
 
 // Input of a circle
@@ -251,6 +256,7 @@ inline bool is_intersect(const Circle &c, const Line &l) {
     return is_intersect(c, projection(l, c));
 }
 
+// 2円が内接・2点で交わる・外接するなら true、含まれる・離れいているなら false
 inline bool is_intersect(const Circle &c1, const Circle &c2) {
     return sign(c1.r + c2.r - (c1 - c2).abs()) >= 0 &&
         sign((c1 - c2).abs() - std::abs(c1.r - c2.r) >= 0);
@@ -303,7 +309,7 @@ std::vector<Point2> cross_point(const Circle &c, const Line &l) {
     if (eq((c - mid).abs(), c.r)) return {mid};
 
     Point2 e = (l[1] - l[0]) / (l[1] - l[0]).abs();
-    Real len = sqrt(c.r * c.r - (mid - c).abs2());
+    Real len = std::sqrt(c.r * c.r - (mid - c).abs2());
     return {mid + e * len, mid - e * len};
 }
 
@@ -314,7 +320,7 @@ std::vector<Point2> cross_point(const Circle &c, const Segment &s) {
     const Point2 mid = projection(s, c), e = (s[1] - s[0]) / (s[1] - s[0]).abs();
     if (eq(c.r, (mid - c).abs())) return { mid };
 
-    const Real len = sqrt(c.r * c.r - (mid - c).abs2());
+    const Real len = std::sqrt(c.r * c.r - (mid - c).abs2());
     const Point2 p1 = mid + e * len, p2 = mid - e * len;
     const CCW ccw1 = ccw(s[0], p1, s[1]); 
 
@@ -334,8 +340,10 @@ std::vector<Point2> cross_point(const Circle &c1, const Circle &c2) {
     if (!is_intersect(c1, c2))
         return std::vector<Point2>();
     Real d = distance(c1, c2);
-    Real r1_cos = (d * d + c1.r * c1.r - c2.r * c2.r) / (2.0 * d);
-    Real h = sqrt(c1.r * c1.r - r1_cos * r1_cos);
+
+    // Herbie による提案: Real r1_cos = (d * d + c1.r * c1.r - c2.r * c2.r) / (2.0 * d);
+    Real r1_cos = 0.5 * (d + ((c1.r + c2.r) / d) * (c1.r - c2.r));
+    Real h = std::sqrt(c1.r * c1.r - r1_cos * r1_cos);
     Point2 base = c1 + (c2 - c1) * r1_cos / d;
     Point2 dir = (c2 - c1).rotate90() * h / d;
     if (dir == Point2(0, 0))
@@ -351,7 +359,7 @@ std::vector<Point2> tangent_point(const Circle &c, const Point2 &p) {
         return std::vector<Point2>();
     d = std::max(d, 0.0);
     Point2 q1 = (p - c) * (c.r * c.r / x);
-    Point2 q2 = ((p - c) * (-c.r * sqrt(d) / x)).rotate90();
+    Point2 q2 = ((p - c) * (-c.r * std::sqrt(d) / x)).rotate90();
     if (q2 == Point2(0, 0)) return {c + q1};
     return {c + q1 - q2, c + q1 + q2};
 }
@@ -404,9 +412,33 @@ std::vector<Line> common_tangent(const Circle &c1, const Circle &c2) {
     return list;
 }
 
+Real Circle::area_circular_sector(const Point2 &p1, const Point2 &p2, const bool strict_check) const {
+    // p1 または p2 が円周上の点ではない場合（数値誤差のため corss_point 関数で求めた点が円周上の点ではない場合がある）
+    if (strict_check) {
+        if (neq(r, distance(*this, p1)) || neq(r, distance(*this, p2))) return 0.0;
+    }
+    if (p1 == p2) return 0.0;
+    return 0.5 * r * r * std::abs(::arg(p1 - *this, p2 - *this));
+}
+
+Real Circle::area_circular_segment(const Point2 &p1, const Point2 &p2, const bool strict_check) const {
+        // p1 または p2 が円周上の点ではない場合（数値誤差のため corss_point 関数で求めた点が円周上の点ではない場合がある）
+    if (strict_check) {
+        if (neq(r, distance(*this, p1)) || neq(r, distance(*this, p2))) return 0.0;
+    }
+    Real area = this->area_circular_sector(p1, p2);
+    if (eq(area, 0.0)) return 0.0;
+    return area - 0.5 * std::abs(abs_cross(p1 - *this, p2 - *this));
+}
+
 CONTAIN Circle::contain(const Point2 &p) const {
     const Real d = distance(p, p);
     return eq(this->r, d) ? CONTAIN::ON : (lt(this->r, d) ? CONTAIN::OUT : CONTAIN::IN);
+}
+
+// this が rhs を含む・内接するなら true、それ以外（2点で交わる・外接する・離れている）なら false を返す
+bool Circle::contain(const Circle &rhs) const {
+    return leq(rhs.r, this->r) && leq((*this - rhs).abs(), std::abs(this->r - rhs.r));
 }
 
 
@@ -606,7 +638,7 @@ Polygon Polygon::convex_cut(const Line &l) const {
 
 // 円板 c と多角形 poly の共通部分の面積を返す： O(n) 時間
 // 多角形の面積を隣接する二点間の符号付き面積で求める方法を用いる
-Real intersection_area(const Circle &c, const Polygon &poly) {
+Real area_intersection(const Circle &c, const Polygon &poly) {
     Real area = 0.0;
 
     const int n = poly.points.size();
