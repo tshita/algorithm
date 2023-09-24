@@ -107,7 +107,9 @@ C++ implementations of algorithms
 - [Is it true that std::vector\<bool\> is slow? (only flag usage)](compare_speed_cpp/vector_bool.cc)
 
 # 9. 2D Geometry
-- [2d geometry](geometry/geometry_basic.cc) (this is not arranged. Let's use CGAL)
+- [Collection of problems in computational geometry solved in C++](https://github.com/tshita/prob_comp_geo_cpp)  
+  The geometry library move it because it is easier to organaize in a problem-driven way.
+- [2D geometry](geometry/geometry_basic.cc) (Let's use CGAL)
 
 
 # TODO Lists
