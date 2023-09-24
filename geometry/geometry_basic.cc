@@ -7,7 +7,7 @@
 #include <vector>
 #include <stack>
 
-using Real = double;
+using Real = long double;
 
 constexpr Real EPS = 1e-10;
 const Real PI = acos(static_cast<Real>(-1.0)); // GCC 4.6.1 以上で acos() は constexpr の場合がある
@@ -674,6 +674,9 @@ Real area_intersection(const Circle &c, const Polygon &poly) {
 
     return area;
 }
+
+// --------------------8<------- start of main part of library -------8<--------------------
+// --------------------8<------- end of main part of library   -------8<--------------------
 
 
 int main() {
