@@ -357,7 +357,7 @@ std::vector<Point2> tangent_point(const Circle &c, const Point2 &p) {
     Real d = x - c.r * c.r;
     if (sign(d) == -1) // no Point2
         return std::vector<Point2>();
-    d = std::max(d, 0.0);
+    d = std::max(d, (Real)0.0);
     Point2 q1 = (p - c) * (c.r * c.r / x);
     Point2 q2 = ((p - c) * (-c.r * std::sqrt(d) / x)).rotate90();
     if (q2 == Point2(0, 0)) return {c + q1};
