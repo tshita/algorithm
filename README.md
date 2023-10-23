@@ -112,6 +112,10 @@ C++ implementations of algorithms
 - [2D geometry](geometry/geometry_basic.cc) (Let's use CGAL)
 
 
+# 10. Game and Puzzles 
+- [Make N](other/make_n.cc)
+
+
 # TODO Lists
 + Strongly connected components by Tarjan
 + Max cut prolbme on planar graph by F. Hadlock (1975)
