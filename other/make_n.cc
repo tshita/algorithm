@@ -44,15 +44,16 @@ using rational = boost::rational<long long>;
 class MakeN {
     std::optional<rational> target;
     std::vector<rational> nums;
-    std::stack<std::variant<rational, char>> polish_notation;
+
+    std::stack<rational> st_num;
+    std::stack<std::pair<unsigned char, char>> st_op;
 
     bool find_all_equations = true;
     std::vector<std::string> equations;
 
     void FindSolution();
-    bool Rec(const int idx_op, const int idx_nums);
-    bool CorrectEquation(std::stack<std::variant<rational, char>> pn);
-    void SetEquation(std::stack<std::variant<rational, char>> pn);
+    bool Rec(const int idx_nums, const int idx_op);
+    void SetEquation(std::stack<std::pair<unsigned char, char>> st_op);
 
     std::string to_string(const rational &r) const {
         if (r.denominator() == 1) return std::to_string(r.numerator());
@@ -78,7 +79,7 @@ public:
     void PrintEquations(const char delimiter = '\0') const {
         std::cout << to_string(*target) << " = \n";
         unsigned int no = 1;
-        for (const std::string &eq_i : equations) { std::cout << "(" << no++ << ") " << eq_i << '\n'; }
+        for (const auto &eq_i : equations) { std::cout << "(" << no++ << ") " << eq_i << '\n'; }
         std::cout << delimiter;
     }
 };
@@ -87,68 +88,62 @@ void MakeN::FindSolution() {
     equations.clear();
 
     do {
-        polish_notation = {};
+        st_op = {}; st_num = {};
+        st_num.push(nums.front());
         if (Rec(0, 0) && !find_all_equations) break;
     } while (std::next_permutation(nums.begin(), nums.end()));
 }
 
-bool MakeN::CorrectEquation(std::stack<std::variant<rational, char>> pn) {
-    std::stack<rational> operand;
-    while (pn.size() != 1 || pn.top().index() != 0) {
-        if (pn.top().index() == 0) {
-            operand.push(std::get<0>(pn.top()));
-            pn.pop();
+void MakeN::SetEquation(std::stack<std::pair<unsigned char, char>> st_op) {
+    std::string equation;
+
+    int idx_num = nums.size() - 1;
+    for (int i = 2 * nums.size() - 2; 0 <= i; --i) {
+        if (!st_op.empty() && st_op.top().first == i) {
+            equation = std::string(1, st_op.top().second) + " " + equation;
+            st_op.pop();
         }
         else {
-            // a @ b (@ \in {+, -, *, /})
-            const rational b = operand.top(); operand.pop();
-            const rational a = operand.top(); operand.pop();
-            char op = std::get<1>(pn.top()); pn.pop();
-            if (op == '+') pn.push(a + b);
-            else if (op == '-') pn.push(a - b);
-            else if (op == '*') pn.push(a * b);
-            else if (op == '/' && b != 0) pn.push(a / b);
-            else return false;
+            equation = to_string(nums[idx_num--]) + " " + equation;
         }
     }
-    return (std::get<0>(pn.top()) == target);
-}
 
-void MakeN::SetEquation(std::stack<std::variant<rational, char>> pn) {
-    std::string equation;
-    while (!pn.empty()) {
-        if (pn.top().index() == 0) equation += to_string(std::get<0>(pn.top())) + " ";
-        else equation += std::string(1, std::get<1>(pn.top())) + " ";
-        pn.pop();
-    }
     equations.emplace_back(equation);
 }
 
-bool MakeN::Rec(const int idx_op, const int idx_nums) {
-    if (idx_op + 1 == (int)nums.size() && idx_nums + 1 == (int)nums.size()) {
-        polish_notation.push(nums.front());
-
-        if (CorrectEquation(polish_notation)) {
-            SetEquation(polish_notation);
-            polish_notation.pop();
+bool MakeN::Rec(const int idx_nums, const int idx_op) {
+    if (idx_nums + 1 == (int)nums.size() && idx_op + 1 == (int)nums.size()) {
+        if (*target == st_num.top()) {
+            SetEquation(st_op);
             return true;
         }
-
-        polish_notation.pop();
         return false;
     }
 
-    if (idx_op + 1 < (int)nums.size()) {
+    if (idx_op < idx_nums) {
+        const rational b = st_num.top(); st_num.pop();
+        const rational a = st_num.top(); st_num.pop();
+
         for (const char &op : std::string("+-*/")) {
-            polish_notation.push(op);
-            if (Rec(idx_op + 1, idx_nums) && !find_all_equations) return true;
-            polish_notation.pop();
+            if (op == '+') st_num.push(a + b);
+            else if (op == '-') st_num.push(a - b);
+            else if (op == '*') st_num.push(a * b);
+            else if (op == '/') {
+                if (b == 0) continue;
+                st_num.push(a / b);
+            }
+
+            st_op.push(std::make_pair(idx_nums + idx_op + 1, op));
+            if (Rec(idx_nums, idx_op + 1) && !find_all_equations) return true;
+
+            st_op.pop(); st_num.pop();
         }
+        st_num.push(a); st_num.push(b);
     }
-    if (idx_nums + 1 <= idx_op) {
-        polish_notation.push(nums[idx_nums + 1]);
-        if (Rec(idx_op, idx_nums + 1) && !find_all_equations) return true;
-        polish_notation.pop();
+    if (idx_nums + 1 < (int)nums.size()) {
+        st_num.push(nums[idx_nums + 1]);
+        if (Rec(idx_nums + 1, idx_op) && !find_all_equations) return true;
+        st_num.pop();
     }
 
     return false;
