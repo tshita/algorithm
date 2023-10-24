@@ -77,7 +77,8 @@ public:
 
     void PrintEquations(const char delimiter = '\0') const {
         std::cout << to_string(*target) << " = \n";
-        for (const std::string &eq_i : equations) { std::cout << eq_i << '\n'; }
+        unsigned int no = 1;
+        for (const std::string &eq_i : equations) { std::cout << "(" << no++ << ") " << eq_i << '\n'; }
         std::cout << delimiter;
     }
 };
@@ -129,6 +130,7 @@ bool MakeN::Rec(const int idx_op, const int idx_nums) {
 
         if (CorrectEquation(polish_notation)) {
             SetEquation(polish_notation);
+            polish_notation.pop();
             return true;
         }
 
@@ -139,13 +141,13 @@ bool MakeN::Rec(const int idx_op, const int idx_nums) {
     if (idx_op + 1 < (int)nums.size()) {
         for (const char &op : std::string("+-*/")) {
             polish_notation.push(op);
-            if (Rec(idx_op + 1, idx_nums)) return true;
+            if (Rec(idx_op + 1, idx_nums) && !find_all_equations) return true;
             polish_notation.pop();
         }
     }
     if (idx_nums + 1 <= idx_op) {
         polish_notation.push(nums[idx_nums + 1]);
-        if (Rec(idx_op, idx_nums + 1)) return true;
+        if (Rec(idx_op, idx_nums + 1) && !find_all_equations) return true;
         polish_notation.pop();
     }
 
