@@ -114,7 +114,7 @@ C++ implementations of algorithms
 
 # 10. Games and Puzzles
 - [Make N](games_puzzles/make_n.cc)  
-  Ex.) Make $13$ from $\{2, 5, 5, 9\}$ ☞ $(9 - 5) \times 2 + 5$
+  Ex.) Make $13$ from $\{ 2, 5, 5, 9 \}$ ☞ $(9 - 5) \times 2 + 5$
 
 
 # TODO Lists
