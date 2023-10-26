@@ -112,8 +112,9 @@ C++ implementations of algorithms
 - [2D geometry](geometry/geometry_basic.cc) (Let's use CGAL)
 
 
-# 10. Game and Puzzles 
-- [Make N](other/make_n.cc)
+# 10. Games and Puzzles
+- [Make N](games_puzzles/make_n.cc)  
+  Ex.) Make $13$ from $\{2, 5, 5, 9\}$ ☞ $(9 - 5) \times 2 + 5$
 
 
 # TODO Lists
