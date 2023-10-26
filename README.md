@@ -113,7 +113,7 @@ C++ implementations of algorithms
 
 
 # 10. Games and Puzzles
-- [Make N](games_puzzles/make_n.cc)  
+- [Make N](doc/games_puzzles/make_n.md)  
   Ex.) Make $13$ from $\lbrace 2, 5, 5, 9 \rbrace$ ☞ $(9 - 5) \times 2 + 5$
 
 
