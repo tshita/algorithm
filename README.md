@@ -92,8 +92,24 @@ C++ implementations of algorithms
 
 # 6. Approximation Algorithms
 - [Vertex cover problem (using maximal matching): 2-approximation algorithm](approximation_algorithm/vertex_cover_by_maximal_matching_2apx.cc)
+ 
 
-# 7. Other
+# 7. Comparing speed in C++
+- [Is it true that std::vector\<bool\> is slow? (only flag usage)](compare_speed_cpp/vector_bool.cc)
+ 
+ 
+# 8. 2D Geometry
+- [Collection of problems in computational geometry solved in C++](https://github.com/tshita/prob_comp_geo_cpp)  
+  The geometry library move it because it is easier to organaize in a problem-driven way.
+- [2D geometry](geometry/geometry_basic.cc) (Let's use CGAL)
+ 
+ 
+# 9. Games and Puzzles
+- [Make N](doc/games_puzzles/make_n.md) (the link on GitHub is broken.) 
+  Ex.) Make $13$ from $\lbrace 2, 5, 5, 9 \rbrace$ ☞ $(9 - 5) \times 2 + 5$
+ 
+ 
+# 10. Other
 - [Counting sort](other/counting_sort.cc)
 - [0-1 Knapsack problem (branch and bound method)](other/01knapsack_problem_branch_and_bound.cc)
 - [2-satisfiability problem](other/two_sat.cc)
@@ -103,18 +119,6 @@ C++ implementations of algorithms
 - [XorShift128 plus by Blackman and Vigna](other/xor_shift128_plus.cc)
 
 
-# 8. Comparing speed in C++
-- [Is it true that std::vector\<bool\> is slow? (only flag usage)](compare_speed_cpp/vector_bool.cc)
-
-# 9. 2D Geometry
-- [Collection of problems in computational geometry solved in C++](https://github.com/tshita/prob_comp_geo_cpp)  
-  The geometry library move it because it is easier to organaize in a problem-driven way.
-- [2D geometry](geometry/geometry_basic.cc) (Let's use CGAL)
-
-
-# 10. Games and Puzzles
-- [Make N](doc/games_puzzles/make_n.md)  
-  Ex.) Make $13$ from $\lbrace 2, 5, 5, 9 \rbrace$ ☞ $(9 - 5) \times 2 + 5$
 
 
 # TODO Lists
