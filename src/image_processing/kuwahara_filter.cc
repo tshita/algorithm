@@ -24,8 +24,8 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
                 u_int sum = 0, sum_sqr = 0, num = 0;
                 SumPix sum_pix(0, 0, 0);
 
-                const u_int sy = std::clamp(y + sub_size * dy[i], 0u, y);
-                const u_int sx = std::clamp(x + sub_size * dx[i], 0u, x);
+                const u_int sy = std::clamp((int)y + (int)sub_size * dy[i], 0, (int)y);
+                const u_int sx = std::clamp((int)x + (int)sub_size * dx[i], 0, (int)x);
 
                 for (u_int i = 0; i <= sub_size && sy + i < org.get_height(); ++i) {
                     for (u_int j = 0; j <= sub_size && sx + j < org.get_width(); ++j) {
