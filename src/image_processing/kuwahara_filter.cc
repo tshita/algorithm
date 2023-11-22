@@ -12,12 +12,13 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
     Image img(org.get_width(), org.get_height());
 
     using SumPix = std::tuple<u_int, u_int, u_int>;
+    using ld = long double;
     const int dx[] = {-1, 0, -1, 0};
     const int dy[] = {-1, -1, 0, 0};
 
     for (u_int y = 0; y < org.get_height(); ++y) {
         for (u_int x = 0; x < org.get_width(); ++x) {
-            std::pair<double, SumPix> select(DBL_MAX, SumPix()); // (variance, mean)
+            std::pair<ld, SumPix> select(LDBL_MAX, SumPix()); // (variance, mean)
 
             for (u_int i = 0; i < 4; ++i) {
                 u_int sum = 0, sum_sqr = 0, num = 0;
@@ -42,12 +43,12 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
                     }
                 }
 
-                const double var = sum_sqr / num - (sum / num) * (sum / num);
+                const ld var = sum_sqr / (ld)num - std::pow(sum / (ld)num, 2.0);
                 if (num > 1 && select.first > var) {
                     select.first = var;
-                    std::get<0>(select.second) = std::round(std::get<0>(sum_pix) / num);
-                    std::get<1>(select.second) = std::round(std::get<1>(sum_pix) / num);
-                    std::get<2>(select.second) = std::round(std::get<2>(sum_pix) / num);
+                    std::get<0>(select.second) = std::round(std::get<0>(sum_pix) / (ld)num);
+                    std::get<1>(select.second) = std::round(std::get<1>(sum_pix) / (ld)num);
+                    std::get<2>(select.second) = std::round(std::get<2>(sum_pix) / (ld)num);
                 }
             }
 
