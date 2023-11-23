@@ -34,26 +34,25 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
     }
 
     const int sub_size = window_size / 2;
-    auto get_index = [sub_size, W, H](int x, int y, u_int idx) -> std::tuple<u_int, u_int, u_int, u_int> {
-        u_int lx = x, ly = y, rx = x, ry = y;
+    auto get_area = [sub_size, W, H](int x, int y, u_int idx) -> std::tuple<u_int, u_int, u_int, u_int> {
+        u_int lx = x, ly = y, ux = x, uy = y;
         if (idx == 0) { // left up
             lx = std::clamp(x - sub_size, 0, (int)W - 1);
             ly = std::clamp(y - sub_size, 0, (int)H - 1);
         }
         else if (idx == 1) { // right up
             ly = std::clamp(y - sub_size, 0, (int)H - 1);
-            rx = std::clamp(x + sub_size, 0, (int)W - 1);
+            ux = std::clamp(x + sub_size, 0, (int)W - 1);
         }
         else if (idx == 2) { // left down
             lx = std::clamp(x - sub_size, 0, (int)W - 1);
-            ry = std::clamp(y + sub_size, 0, (int)H - 1);
+            uy = std::clamp(y + sub_size, 0, (int)H - 1);
         }
         else if (idx == 3) { // right down
-            rx = std::clamp(x + sub_size, 0, (int)W - 1);
-            ry = std::clamp(y + sub_size, 0, (int)H - 1);
+            ux = std::clamp(x + sub_size, 0, (int)W - 1);
+            uy = std::clamp(y + sub_size, 0, (int)H - 1);
         }
-
-        return {lx, ly, rx, ry};
+        return {lx, ly, ux, uy};
     };
 
     using ld = long double;
@@ -62,19 +61,21 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
             ld min_var = LDBL_MAX;
 
             for (u_int idx = 0; idx < 4; ++idx) {
-                const auto [lx, ly, rx, ry] = get_index(x, y, idx);
-                const u_int num = (rx - lx + 1) * (ry - ly + 1);
+                const auto [lx, ly, ux, uy] = get_area(x, y, idx);
+                const u_int num = (ux - lx + 1) * (uy - ly + 1);
                 if (num == 1) continue;
 
-                const ld sum_sub = Sum(sum, lx, ly, rx, ry);
-                const ld sum_sqr_sub = Sum(sum_p2, lx, ly, rx, ry);
+                const ld sum_sub = Sum(sum, lx, ly, ux, uy);
+                const ld sum_sqr_sub = Sum(sum_p2, lx, ly, ux, uy);
+
+                // 標準偏差が最小の領域と分散が最小の領域は等しいので分散で計算
                 const ld var = sum_sqr_sub / num - std::pow(sum_sub / num, 2.0);
 
                 if (var < min_var) {
                     min_var = var;
-                    img[y][x].red = std::round(Sum(sum_r, lx, ly, rx, ry) / (ld)num);
-                    img[y][x].green = std::round(Sum(sum_g, lx, ly, rx, ry) / (ld)num);
-                    img[y][x].blue = std::round(Sum(sum_b, lx, ly, rx, ry) / (ld)num);
+                    img[y][x].red = std::round(Sum(sum_r, lx, ly, ux, uy) / (ld)num);
+                    img[y][x].green = std::round(Sum(sum_g, lx, ly, ux, uy) / (ld)num);
+                    img[y][x].blue = std::round(Sum(sum_b, lx, ly, ux, uy) / (ld)num);
                 }
             }
         }
