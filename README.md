@@ -1,6 +1,8 @@
 C++ implementations of algorithms
 ===========================================
 
+Some relative links on this page are broken. Please visit the [README.md](https://github.com/tshita/algorithm/blob/main/README.md) instead.
+
 # 1. Template
 - [Template for competitive programming](template/template.cc)
 - [Template for algorithm](template/algorithm_template.cc)
@@ -105,11 +107,13 @@ C++ implementations of algorithms
  
  
 # 9. Games and Puzzles
-- [Make N](doc/games_puzzles/make_n.md) (the link on GitHub is broken.) 
+- [Make N](doc/games_puzzles/make_n.md)
   Ex.) Make $13$ from $\lbrace 2, 5, 5, 9 \rbrace$ ☞ $(9 - 5) \times 2 + 5$
  
- 
-# 10. Other
+# 10. Image Processing
+- [Kuwahara filter](doc/image_processing/kuwahara_filter.md)
+　
+# 11. Other
 - [Counting sort](other/counting_sort.cc)
 - [0-1 Knapsack problem (branch and bound method)](other/01knapsack_problem_branch_and_bound.cc)
 - [2-satisfiability problem](other/two_sat.cc)
