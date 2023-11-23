@@ -34,7 +34,7 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
     }
 
     const int sub_size = window_size / 2;
-    auto get_index = [sub_size, W, H](int x, int y, u_int idx) -> std::tuple<u_int, u_int, u_int, u_int> {
+    auto get_range = [sub_size, W, H](int x, int y, u_int idx) -> std::tuple<u_int, u_int, u_int, u_int> {
         u_int lx = x, ly = y, ux = x, uy = y;
         if (idx == 0) { // left up
             lx = std::clamp(x - sub_size, 0, (int)W - 1);
@@ -61,7 +61,7 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
             ld min_var = LDBL_MAX;
 
             for (u_int idx = 0; idx < 4; ++idx) {
-                const auto [lx, ly, ux, uy] = get_index(x, y, idx);
+                const auto [lx, ly, ux, uy] = get_range(x, y, idx);
                 const u_int num = (ux - lx + 1) * (uy - ly + 1);
                 if (num == 1) continue;
 
