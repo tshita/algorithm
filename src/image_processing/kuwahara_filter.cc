@@ -8,57 +8,70 @@
 using Image = png::image<png::rgb_pixel>;
 
 Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
-    const u_int sub_size = window_size / 2;
-    Image img(org.get_width(), org.get_height());
+    const u_int W = org.get_width(), H = org.get_height();
+    Image img(W, H);
 
-    using SumPix = std::tuple<u_int, u_int, u_int>;
     using ld = long double;
-    const int dx[] = {-1, 0, -1, 0};
-    const int dy[] = {-1, -1, 0, 0};
+    const int sub_size = window_size / 2;
+    auto get_range = [sub_size, W, H](int x, int y, u_int idx) -> std::tuple<u_int, u_int, u_int, u_int> {
+        u_int lx = x, ly = y, ux = x, uy = y;
+        if (idx == 0) { // left up
+            lx = std::clamp(x - sub_size, 0, (int)W - 1);
+            ly = std::clamp(y - sub_size, 0, (int)H - 1);
+        }
+        else if (idx == 1) { // right up
+            ly = std::clamp(y - sub_size, 0, (int)H - 1);
+            ux = std::clamp(x + sub_size, 0, (int)W - 1);
+        }
+        else if (idx == 2) { // left down
+            lx = std::clamp(x - sub_size, 0, (int)W - 1);
+            uy = std::clamp(y + sub_size, 0, (int)H - 1);
+        }
+        else if (idx == 3) { // right down
+            ux = std::clamp(x + sub_size, 0, (int)W - 1);
+            uy = std::clamp(y + sub_size, 0, (int)H - 1);
+        }
+        return {lx, ly, ux, uy};
+    };
 
-    for (u_int y = 0; y < org.get_height(); ++y) {
-        for (u_int x = 0; x < org.get_width(); ++x) {
-            std::pair<ld, SumPix> select(LDBL_MAX, SumPix()); // (variance, mean)
+    for (u_int y = 0; y < H; ++y) {
+        for (u_int x = 0; x < W; ++x) {
+            ld min_variance = LDBL_MAX;
 
-            for (u_int i = 0; i < 4; ++i) {
-                u_int sum = 0, sum_sqr = 0, num = 0;
-                SumPix sum_pix(0, 0, 0);
+            for (u_int idx = 0; idx < 4; ++idx) {
+                const auto [lx, ly, ux, uy] = get_range(x, y, idx);
+                const u_int num = (ux - lx + 1) * (uy - ly + 1);
+                if (num == 1) continue;
 
-                const u_int sy = std::clamp((int)y + (int)sub_size * dy[i], 0, (int)y);
-                const u_int sx = std::clamp((int)x + (int)sub_size * dx[i], 0, (int)x);
-
-                for (u_int i = 0; i <= sub_size && sy + i < org.get_height(); ++i) {
-                    for (u_int j = 0; j <= sub_size && sx + j < org.get_width(); ++j) {
-                        const png::rgb_pixel &p = org[sy + i][sx + j];
-                        ++num;
+                ld sum = 0.0, sum_p2 = 0.0;
+                std::tuple<u_int, u_int, u_int> sum_pix(0, 0, 0);
+                for (u_int yy = ly; yy <= uy; ++yy) {
+                    for (u_int xx = lx; xx <= ux; ++xx) {
+                        const png::rgb_pixel &p = org[yy][xx];
 
                         // HSV色空間の明度を取得（R, G, B の最大値に等しい）
                         const u_int value = std::max({p.red, p.green, p.blue});
-
                         sum += value;
-                        sum_sqr += value * value;
+                        sum_p2 += value * value;
                         std::get<0>(sum_pix) += p.red;
                         std::get<1>(sum_pix) += p.green;
                         std::get<2>(sum_pix) += p.blue;
                     }
                 }
 
-                const ld var = sum_sqr / (ld)num - std::pow(sum / (ld)num, 2.0);
-                if (num > 1 && select.first > var) {
-                    select.first = var;
-                    std::get<0>(select.second) = std::round(std::get<0>(sum_pix) / (ld)num);
-                    std::get<1>(select.second) = std::round(std::get<1>(sum_pix) / (ld)num);
-                    std::get<2>(select.second) = std::round(std::get<2>(sum_pix) / (ld)num);
+                // 標準偏差が最小の領域と分散が最小の領域は等しいので分散で計算
+                const ld var = sum_p2 / num - std::pow(sum / num, 2.0);
+
+                // Update
+                if (var < min_variance) {
+                    min_variance = var;
+                    img[y][x].red = std::round(std::get<0>(sum_pix) / (ld)num);
+                    img[y][x].green = std::round(std::get<1>(sum_pix) / (ld)num);
+                    img[y][x].blue = std::round(std::get<2>(sum_pix) / (ld)num);
                 }
             }
-
-            // Update
-            img[y][x].red = std::get<0>(select.second);
-            img[y][x].green = std::get<1>(select.second);
-            img[y][x].blue = std::get<2>(select.second);
         }
     }
-
     return img;
 }
 
