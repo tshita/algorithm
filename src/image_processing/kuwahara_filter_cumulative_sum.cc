@@ -5,37 +5,39 @@
 #include <cfloat>
 #include <cmath>
 
+// ---------------------8<------- start of library -------8<--------------------
 using Image = png::image<png::rgb_pixel>;
 
-u_int Sum(const std::vector<std::vector<u_int>> &v, const u_int sx, const u_int sy, const u_int rx, const u_int ry) {
+template<typename T>
+T Sum(const std::vector<std::vector<T>> &v, const uint32_t sx, const uint32_t sy, const uint32_t rx, const uint32_t ry) {
     return v[ry + 1][rx + 1] - v[ry + 1][sx] - v[sy][rx + 1] + v[sy][sx];
 }
 
-Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
-    const u_int W = org.get_width(), H = org.get_height();
+Image KuwaharaFilter(const Image &org, uint32_t window_size = 5) {
+    const uint32_t W = org.get_width(), H = org.get_height();
 
     Image img(W, H);
-    std::vector<std::vector<u_int>> sum(H + 1, std::vector<u_int>(W + 1, 0));
-    std::vector<std::vector<u_int>> sum_p2(H + 1, std::vector<u_int>(W + 1, 0));
-    std::vector<std::vector<u_int>> sum_r(H + 1, std::vector<u_int>(W + 1, 0));
-    std::vector<std::vector<u_int>> sum_g(H + 1, std::vector<u_int>(W + 1, 0));
-    std::vector<std::vector<u_int>> sum_b(H + 1, std::vector<u_int>(W + 1, 0));
+    std::vector<std::vector<uint32_t>> sum(H + 1, std::vector<uint32_t>(W + 1, 0));
+    std::vector<std::vector<uint64_t>> sum_p2(H + 1, std::vector<uint64_t>(W + 1, 0));
+    std::vector<std::vector<uint32_t>> sum_r(H + 1, std::vector<uint32_t>(W + 1, 0));
+    std::vector<std::vector<uint32_t>> sum_g(H + 1, std::vector<uint32_t>(W + 1, 0));
+    std::vector<std::vector<uint32_t>> sum_b(H + 1, std::vector<uint32_t>(W + 1, 0));
 
-    for (u_int y = 0; y < H; ++y) {
-        for (u_int x = 0; x < W; ++x) {
+    for (uint32_t y = 0; y < H; ++y) {
+        for (uint32_t x = 0; x < W; ++x) {
             const png::rgb_pixel &p = org[y][x];
-            const u_int value = std::max({p.red, p.green, p.blue});
-            sum[y + 1][x + 1] = sum[y + 1][x] + sum[y][x + 1] - sum[y][x] + value;
-            sum_p2[y + 1][x + 1] = sum_p2[y + 1][x] + sum_p2[y][x + 1] - sum_p2[y][x] + value * value;
-            sum_r[y + 1][x + 1] = sum_r[y + 1][x] + sum_r[y][x + 1] - sum_r[y][x] + p.red;
-            sum_g[y + 1][x + 1] = sum_g[y + 1][x] + sum_g[y][x + 1] - sum_g[y][x] + p.green;
-            sum_b[y + 1][x + 1] = sum_b[y + 1][x] + sum_b[y][x + 1] - sum_b[y][x] + p.blue;
+            const uint32_t value = std::max({p.red, p.green, p.blue});
+            sum[y + 1][x + 1] = value + sum[y + 1][x] + sum[y][x + 1] - sum[y][x];
+            sum_p2[y + 1][x + 1] = value * value + sum_p2[y + 1][x] + sum_p2[y][x + 1] - sum_p2[y][x];
+            sum_r[y + 1][x + 1] = p.red + sum_r[y + 1][x] + sum_r[y][x + 1] - sum_r[y][x];
+            sum_g[y + 1][x + 1] = p.green + sum_g[y + 1][x] + sum_g[y][x + 1] - sum_g[y][x];
+            sum_b[y + 1][x + 1] = p.blue + sum_b[y + 1][x] + sum_b[y][x + 1] - sum_b[y][x];
         }
     }
 
     const int sub_size = window_size / 2;
-    auto get_range = [sub_size, W, H](int x, int y, u_int idx) -> std::tuple<u_int, u_int, u_int, u_int> {
-        u_int lx = x, ly = y, ux = x, uy = y;
+    auto get_range = [sub_size, W, H](int x, int y, uint32_t idx) -> std::tuple<uint32_t, uint32_t, uint32_t, uint32_t> {
+        uint32_t lx = x, ly = y, ux = x, uy = y;
         if (idx == 0) { // left up
             lx = std::clamp(x - sub_size, 0, (int)W - 1);
             ly = std::clamp(y - sub_size, 0, (int)H - 1);
@@ -56,13 +58,13 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
     };
 
     using ld = long double;
-    for (u_int y = 0; y < H; ++y) {
-        for (u_int x = 0; x < W; ++x) {
+    for (uint32_t y = 0; y < H; ++y) {
+        for (uint32_t x = 0; x < W; ++x) {
             ld min_var = LDBL_MAX;
 
-            for (u_int idx = 0; idx < 4; ++idx) {
+            for (uint32_t idx = 0; idx < 4; ++idx) {
                 const auto [lx, ly, ux, uy] = get_range(x, y, idx);
-                const u_int num = (ux - lx + 1) * (uy - ly + 1);
+                const uint32_t num = (ux - lx + 1) * (uy - ly + 1);
                 if (num == 1) continue;
 
                 const ld sum_sub = Sum(sum, lx, ly, ux, uy);
@@ -82,11 +84,11 @@ Image KuwaharaFilter(const Image &org, u_int window_size = 5) {
     }
     return img;
 }
-
+// ---------------------8<------- end of library   -------8<---------------------
 
 int main(int argc, char **argv) {
     std::string file_path;
-    u_int window_size = 5;
+    uint32_t window_size = 5;
     for (int i = 0; i < argc; ++i) {
         std::string para(argv[i]);
         // Check only unsigned int window size and PNG image for simplicity.
