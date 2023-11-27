@@ -25,6 +25,7 @@ Kuwahara filter は非線形フィルターである。
 ## Reference
  - [1] [Kuwahara filter @Wikipedia](https://en.wikipedia.org/wiki/Kuwahara_filter)
  - [2] [湊小太郎，桑原道義：「SPECT 用データ処理 -画像データ処理-」．](https://www.jstage.jst.go.jp/article/mit/2/2/2_91/_pdf)
+ - [3] [黒田久泰：C 言語による OpenMP 入門．東京大学情報基盤センター プログラミング講習会資料．](https://www.cc.u-tokyo.ac.jp/events/lectures/03/kosyu-openmp_c.pdf)
 
 
 # Source Code
@@ -151,6 +152,7 @@ int main(int argc, char **argv) {
 ```
 </details>
 
+
 ## 愚直な実装 + OpenMP
 上の愚直な実装に OpenMP を用いて画像の行分割で並列化した。コンパイルオプションにに `-fopenmp` を加える必要がある。  
 下のソースコードは行のみで分割しているが、行と列で分割するためには `collapse` 指示節を加え引数に 2 を指定する必要がある。引数の 2 はループの深さに対応している。   
@@ -274,7 +276,6 @@ int main(int argc, char **argv) {
 ```
 
 </details>
-
 
 
 ## 累積和を用いた実装
