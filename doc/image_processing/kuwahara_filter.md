@@ -30,7 +30,7 @@ Kuwahara filter は非線形フィルターである。
 # Source Code
 PNG 画像の読み込みと出力は [png++](https://www.nongnu.org/pngpp/doc/0.2.9/index.html) ライブラリを使用している。基本的な使い方は [png++ ＠忘れても大丈夫](https://kyopro.hateblo.jp/entry/2023/02/01/145344) を参照。
 ```bash
-$ g++ -std=c++2a -Wall -Wextra -O2 'libpng-config --cflags --ldflags' kuwahara_filiter.cc -o kuwahara_filter # コンパイル
+$  g++ -std=c++2a -Wall -Wextra -O2 kuwahara_filter.cc `libpng-config --cflags --ldflags` -o kuwahara_filter # コンパイル
 $ ./kuwahara_filter hoge.png 13 # ウィンドウサイズ 13 で hoge.png 画像をフィルタリング
 ```
 
