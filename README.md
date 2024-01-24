@@ -48,7 +48,8 @@ Some relative links on this page are broken. Please visit the [README.md](https:
 - [Diameter of a tree](graph/tree_diameter.cc)
 
 ## Maximum Flow Problem
-- [Ford-Fulkerson algorithm](graph/maximum_flow_ford_fulkerson.cc)
+- [Ford-Fulkerson method](graph/maximum_flow_ford_fulkerson.cc)
+- [Edmonds-Karp algorithm](doc/graph/maximum_flow_edmonds_karp.md)
 - [Dinic's algorithm](graph/maximum_flow_dinic.cc)
 - [Maximum flow with lower bounds problem](graph/maximum_flow_with_lower_bounds.cc)
 
