@@ -52,7 +52,7 @@ struct CapacityScalingAlgorithm {
         // 容量スケーリング法で最大流を計算
         Weight flow = 0;
         for (unsigned k_th = 1; k_th <= NUM_ITER; ++k_th) {
-            DoubleFlowAndAuxiliaryNetwork(k_th);
+            DoubleFlowAndMakeAuxiliaryNetwork(k_th);
 
             flow *= 2;
             while (true) {
@@ -67,7 +67,7 @@ struct CapacityScalingAlgorithm {
     }
     
     // 現在の流量を二倍にして、各弧容量のスケーリングを変えた補助ネットワークを作成
-    void DoubleFlowAndAuxiliaryNetwork(const unsigned k) {
+    void DoubleFlowAndMakeAuxiliaryNetwork(const unsigned k) {
         // std::cout << "DoubleFlowAndAuxiliaryNetwork" << std::endl;
         for (int v = 0; v < n; ++v) {
             for (auto &&e: adj[v]) {
