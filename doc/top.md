@@ -1,7 +1,7 @@
 Reference Implementations of Algorithms (Personal Collection)
 ==============================================================
 
-> Language icons (e.g., <span title="C++ implementation"><img src="../img/cpp.png" width="24" alt="C++ implementation" style="vertical-align: middle; margin: 2px;"></span>, <span title="Rust implementation"><img src="../img/rust.png" width="24" alt="C++ implementation" style="vertical-align: middle; background-color: white; border-radius: 20%; margin: 2px;"></span>) indicate the implementation language  and link to the corresponding source code in that language.
+> Language icons (e.g., <span title="C++ implementation"><img src="../img/cpp.png" width="24" alt="C++ implementation" style="vertical-align: middle; margin: 2px;"></span>, <span title="Rust implementation"><img src="../img/rust.png" width="24" alt="Rust implementation" style="vertical-align: middle; background-color: white; border-radius: 20%; margin: 2px;"></span>) indicate the implementation language  and link to the corresponding source code in that language.
 
 > **Tags**
 >   
