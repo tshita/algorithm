@@ -1,4 +1,4 @@
-[🏠 Home](../top.md#6-games-and-puzzles)
+[🏠 Home](../index.md#6-games-and-puzzles)
 
 # MakeN
 - **Input**  

@@ -1,4 +1,4 @@
-[🏠 Home](../../README.md)
+[🏠 Home](../index.md#7-image-processing)
 
 # Kuwahara filter（桑原フィルター）
 - **Input**  

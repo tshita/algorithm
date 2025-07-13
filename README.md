@@ -2,7 +2,7 @@
 
 This repository contains my personal reference implementations of algorithms, written in C++ and Rust.
 
-See the [Table of Contents](doc/top.md) for an overview of available algorithms.
+See the [Table of Contents](./docs/index.md) for an overview of available algorithms.
 
 ## Credits
 

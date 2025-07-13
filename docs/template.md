@@ -1,4 +1,4 @@
-[🏠 Home](../../README.md)
+[🏠 Home](../index.md)
 
 【Title】
 【タイトル】

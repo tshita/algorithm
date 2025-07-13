@@ -1,4 +1,4 @@
-[🏠 Home](../top.md#1-graph)
+[🏠 Home](../index.md#1-graph)
 
 Maximum Flow Problem (Capacity Scaling Algorithm)  
 最大流問題（容量スケーリング法）
