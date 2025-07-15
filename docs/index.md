@@ -151,7 +151,7 @@
     <span title="View C++ implementation"><a href="../src/miscellaneous_problems/longest_increasing_subsequence.cc"><img src="./img/cpp.png" width="24" alt="C++ implementation" style="vertical-align: middle; margin: 2px;"></a></span> Uses dynamic programming in $O(n \log n)$ time
 
 - **Pseudorandom Number Generator**  
-    <span title="View C++ implementation"><a href="../src/miscellaneous_problems/xor_shift128_plus.cc"><img src="./img/cpp.png" width="24" alt="C++ implementation" style="vertical-align: middle; margin: 2px;"></a></span> XorShift128+ by Blackman and Vigna
+    <span title="View C++ implementation"><a href="../src/miscellaneous_problems/xor_shift128_plus.cc"><img src="./img/cpp.png" width="24" alt="C++ implementation" style="vertical-align: middle; margin: 2px;"></a></span> XorShift128+ by Blackman and Vigna — For a SIMD-optimized implementation, see Daniel Lemire's [SIMDxorshift](https://github.com/lemire/SIMDxorshift). While both XorShift128+ and [PCG](https://www.pcg-random.org/) are unsuitable for cryptographic purposes, PCG is generally preferred over XorShift128+ for non-cryptographic use cases.
 
 - **Rating System**  
     <span title="View Rust implementation"><a href="../src/miscellaneous_problems/glicko_rating_system.rs"><img src="./img/rust.png" width="24" alt="Rust implementation" style="vertical-align: middle; background-color: white; border-radius: 20%; margin: 2px;"></a></span> Glicko rating system implementation
